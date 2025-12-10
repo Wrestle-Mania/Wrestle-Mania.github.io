@@ -1,1 +1,213 @@
-hello
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WrestleMania Selection Program - Bangladesh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Impact:wght@400;700&family=Arial:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+        }
+        header {
+            background: linear-gradient(135deg, #1a1a1a, #000000);
+            padding: 20px 0;
+            text-align: center;
+            border-bottom: 2px solid #ff0000;
+        }
+        .logo {
+            width: 200px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+        h1 {
+            font-family: 'Impact', sans-serif;
+            font-size: 3em;
+            color: #ff0000;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .subtitle {
+            font-size: 1.2em;
+            color: #cccccc;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .intro {
+            text-align: center;
+            margin-bottom: 50px;
+            font-size: 1.1em;
+            color: #dddddd;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        .card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(255, 0, 0, 0.3);
+            border-color: #ff0000;
+        }
+        .card h2 {
+            color: #ff0000;
+            font-family: 'Impact', sans-serif;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+        .card p {
+            color: #cccccc;
+        }
+        .apply-btn {
+            display: inline-block;
+            background: #ff0000;
+            color: #ffffff;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s ease, transform 0.3s ease;
+            margin-top: 20px;
+        }
+        .apply-btn:hover {
+            background: #cc0000;
+            transform: scale(1.05);
+        }
+        .wrestlers-section {
+            margin: 50px 0;
+            text-align: center;
+        }
+        .wrestlers-section h2 {
+            color: #ff0000;
+            font-family: 'Impact', sans-serif;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+        .wrestlers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .wrestler-card {
+            background: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 10px;
+            padding: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .wrestler-card:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(255, 0, 0, 0.3);
+            border-color: #ff0000;
+        }
+        .wrestler-img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .wrestler-name {
+            color: #ff0000;
+            font-family: 'Impact', sans-serif;
+            font-size: 1.5em;
+            margin: 0;
+        }
+        footer {
+            background: #1a1a1a;
+            text-align: center;
+            padding: 20px;
+            border-top: 2px solid #ff0000;
+            color: #999999;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="https://www.pngkey.com/png/detail/53-538827_wrestlemania-logo-png.png" alt="WrestleMania Logo" class="logo">
+        <h1>WrestleMania Selection Program</h1>
+        <p class="subtitle">Bangladesh Edition</p>
+    </header>
+
+    <div class="container">
+        <div class="intro">
+            <p>Welcome to the WrestleMania Selection Program in Bangladesh! We're on the lookout for the next generation of superstar wrestlers to represent our nation on the grandest stage of them all. If you have the passion, strength, and determination, this is your chance to shine.</p>
+        </div>
+
+        <div class="cards">
+            <div class="card">
+                <h2>About the Program</h2>
+                <p>Discover how the WrestleMania Selection Program identifies and nurtures raw talent from across Bangladesh. Partnered with WWE, we're building a legacy of champions.</p>
+            </div>
+            <div class="card">
+                <h2>Selection Process</h2>
+                <p>Our rigorous selection includes physical trials, skill assessments, and interviews. Only the elite will advance to training camps and potential WWE contracts.</p>
+            </div>
+            <div class="card">
+                <h2>How to Apply</h2>
+                <p>Submit your profile, highlights, and motivation letter. Upcoming tryouts in Dhaka, Chittagong, and Sylhet. Don't miss your opportunity!</p>
+                <a href="#apply" class="apply-btn">Apply Now</a>
+            </div>
+        </div>
+
+        <div class="wrestlers-section">
+            <h2>Inspiration from Current WWE Superstars</h2>
+            <p style="color: #dddddd; margin-bottom: 30px;">Draw motivation from these iconic wrestlers who have dominated the ring.</p>
+            <div class="wrestlers-grid">
+                <div class="wrestler-card">
+                    <img src="https://www.pngkey.com/png/detail/819-8195838_roman-reigns-.png" alt="Roman Reigns" class="wrestler-img">
+                    <h3 class="wrestler-name">Roman Reigns</h3>
+                </div>
+                <div class="wrestler-card">
+                    <img src="https://www.pngkey.com/png/full/560-5602600_cody-rhodes-wwe-cody-rhodes-png.png" alt="Cody Rhodes" class="wrestler-img">
+                    <h3 class="wrestler-name">Cody Rhodes</h3>
+                </div>
+                <div class="wrestler-card">
+                    <img src="https://www.pngkey.com/png/full/181-1818590_becky-lynch.png" alt="Becky Lynch" class="wrestler-img">
+                    <h3 class="wrestler-name">Becky Lynch</h3>
+                </div>
+                <div class="wrestler-card">
+                    <img src="https://www.pngmart.com/files/7/Rhea-Ripley-Champion-Superstar-Powerhouse-Wrestler-PNG-Image.png" alt="Rhea Ripley" class="wrestler-img">
+                    <h3 class="wrestler-name">Rhea Ripley</h3>
+                </div>
+                <div class="wrestler-card">
+                    <img src="https://www.pngkey.com/png/full/9-90839_seth-rollins-png-wwe-seth-rollins.png" alt="Seth Rollins" class="wrestler-img">
+                    <h3 class="wrestler-name">Seth Rollins</h3>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 50px;">
+            <h2 style="color: #ff0000; font-family: 'Impact', sans-serif;">Ready to Wrestle?</h2>
+            <p style="color: #dddddd;">Contact us for more details or to schedule a tryout.</p>
+            <a href="mailto:selection@wmabangladesh.com" class="apply-btn">Get in Touch</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 WrestleMania Selection Program Bangladesh. All rights reserved. | In partnership with WWE.</p>
+    </footer>
+</body>
+</html>
