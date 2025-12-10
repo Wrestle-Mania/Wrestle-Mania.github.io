@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Application Form — WrestleMania Selection Program Bangladesh</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        :root{
+            --bg:#07120f;
+            --green1:#0fb27a;
+            --green2:#00d36a;
+            --card:#0b1f1a;
+            --accent: linear-gradient(135deg,var(--green1),var(--green2));
+            --glass-border: rgba(15,178,122,0.18);
+            --muted: rgba(255,255,255,0.65);
+            --maxwidth:720px;
+        }
+        *{
+            box-sizing:border-box;
+            margin:0;
+            padding:0
+        }
+        body{
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: radial-gradient(800px 360px at 10% 10%, rgba(8,50,40,0.6), transparent), radial-gradient(600px 260px at 90% 90%, rgba(0,131,102,0.18), transparent), var(--bg);
+            color:#eaf9f0;
+            padding:28px 18px;
+            display:flex;
+            justify-content:center;
+            min-height:100vh;
+        }
+        .wrap{
+            width:100%;
+            max-width:var(--maxwidth)
+        }
+        header{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            margin-bottom:18px
+        }
+        .brand{
+            display:flex;
+            gap:12px;
+            align-items:center
+        }
+        .logo{
+            width:52px;
+            height:52px;
+            border-radius:12px;
+            background:var(--accent);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#042b24;
+            font-weight:800;
+            font-size:20px
+        }
+        .brand h1{
+            font-size:18px;
+            color:var(--green2)
+        }
+        .brand p{
+            font-size:12px;
+            color:var(--muted)
+        }
+        .btn{
+            background:var(--accent);
+            padding:10px 14px;
+            border-radius:10px;
+            color:#002016;
+            font-weight:700;
+            border:none;
+            cursor:pointer;
+            text-decoration: none;
+        }
+        .form-card{
+            background:linear-gradient(180deg, rgba(8,22,19,0.55), rgba(5,18,16,0.45));
+            border:1px solid rgba(255,255,255,0.02);
+            padding:22px;
+            border-radius:16px
+        }
+        form{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:12px
+        }
+        label{
+            display:block;
+            font-size:13px;
+            color:var(--green1);
+            margin-bottom:6px;
+            font-weight:700
+        }
+        .full{
+            grid-column:1/-1
+        }
+        input, textarea, select{
+            width:100%;
+            padding:12px;
+            border-radius:10px;
+            border:1px solid var(--glass-border);
+            background:var(--card);
+            color:#eaf9f0;
+            font-size:15px;
+            outline:none
+        }
+        textarea{
+            resize:vertical
+        }
+        .checkbox-group{
+            display:flex;
+            flex-wrap:wrap;
+            gap:10px;
+            margin-top:6px
+        }
+        .checkbox-group label{
+            display:flex;
+            align-items:center;
+            gap:6px;
+            font-weight:500;
+            font-size:14px;
+            color:#dff8ec
+        }
+        .submit-wrap{
+            display:flex;
+            gap:12px;
+            align-items:center;
+            margin-top:6px
+        }
+        .submit-btn,.clear-btn{
+            padding:12px 18px;
+            border:none;
+            border-radius:12px;
+            font-weight:800;
+            cursor:pointer
+        }
+        .submit-btn{
+            background:var(--accent);
+            color:#002016
+        }
+        .clear-btn{
+            background:transparent;
+            border:1px solid var(--green1);
+            color:var(--green1)
+        }
+        .status{
+            font-size:14px;
+            color:var(--muted);
+            margin-left:6px
+        }
+        footer{
+            margin-top:16px;
+            color:var(--muted);
+            text-align:center;
+            font-size:13px
+        }
+        @media (max-width:720px){
+            form{
+                grid-template-columns:1fr
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header>
+            <div class="brand">
+                <div class="logo"><i class="fas fa-dumbbell"></i></div>
+                <div>
+                    <h1>WrestleMania Selection Program</h1>
+                    <p>“Unleash the Beast Within”</p>
+                </div>
+            </div>
+            <div><a href="index.html" class="btn">Home</a></div>
+        </header>
+        <div class="form-card">
+            <h2>Application Form</h2>
+            <form id="applicationForm" onsubmit="sendToTelegram(event)" autocomplete="on" novalidate>
+                <div class="full">
+                    <label for="wrestler">Wrestler's Full Name</label>
+                    <input id="wrestler" name="wrestler" type="text" required>
+                </div>
+                <div>
+                    <label for="age">Age</label>
+                    <input id="age" name="age" type="number" min="18" max="40" required>
+                </div>
+                <div>
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender" required>
+                        <option value="">Select</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="phone">Contact Phone</label>
+                    <input id="phone" name="phone" type="tel" required>
+                </div>
+                <div>
+                    <label for="affiliation">Current Gym/Club</label>
+                    <input id="affiliation" name="affiliation" type="text" required>
+                </div>
+                <div class="full">
+                    <label for="address">Address</label>
+                    <textarea id="address" name="address" rows="2"></textarea>
+                </div>
+                <div class="full">
+                    <label>Wrestling Styles (Select multiple)</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="styles" value="Technical"> Technical</label>
+                        <label><input type="checkbox" name="styles" value="Powerhouse"> Powerhouse</label>
+                        <label><input type="checkbox" name="styles" value="High-Flying"> High-Flying</label>
+                        <label><input type="checkbox" name="styles" value="Submission"> Submission</label>
+                        <label><input type="checkbox" name="styles" value="Brawler"> Brawler</label>
+                        <label><input type="checkbox" name="styles" value="Charisma"> Charisma/Promo</label>
+                    </div>
+                </div>
+                <div class="full">
+                    <label for="note">Additional Information (Optional)</label>
+                    <textarea id="note" name="note" rows="3"></textarea>
+                </div>
+                <div class="full submit-wrap">
+                    <button id="submitBtn" class="submit-btn" type="submit">Submit</button>
+                    <button type="button" class="clear-btn" onclick="form.reset()">Clear</button>
+                    <div class="status" id="statusText">Complete the form and submit.</div>
+                </div>
+            </form>
+        </div>
+        <footer>© 2025 WrestleMania Selection Program Bangladesh — Applications Open • Phone: +880 1745 534677</footer>
+    </div>
+    <script>
+        const BOT_TOKEN = "7899925798:AAF05-m6OEJw5duuyWA6SVaC1Hsn9-AOOsE";
+        const CHAT_ID = "5875087265";
+        const form = document.getElementById('applicationForm');
+        const statusText = document.getElementById('statusText');
+        const submitBtn = document.getElementById('submitBtn');
+        function setStatus(text, ok = true){
+            statusText.textContent = text;
+            statusText.style.color = ok ? 'var(--muted)' : '#ff9b9b';
+        }
+        async function sendToTelegram(e){
+            e.preventDefault();
+            submitBtn.disabled = true;
+            setStatus('⏳ Sending...');
+            const wrestler=document.getElementById('wrestler').value.trim();
+            const age=document.getElementById('age').value.trim();
+            const gender=document.getElementById('gender').value.trim();
+            const phone=document.getElementById('phone').value.trim();
+            const affiliation=document.getElementById('affiliation').value.trim();
+            const address=document.getElementById('address').value.trim();
+            const note=document.getElementById('note').value.trim() || "-";
+            const styles=[...document.querySelectorAll('input[name="styles"]:checked')].map(c=>c.value).join(", ") || "-";
+            const now=new Date();
+            const dateTime=now.toLocaleString("en-US",{timeZone:"Asia/Dhaka"});
+            const message=`WrestleMania Application Form\n👤 Name: ${wrestler}\n📅 Age: ${age}\n⚥ Gender: ${gender}\n📞 Phone: ${phone}\n🏋️ Gym/Club: ${affiliation}\n🏠 Address: ${address}\n💪 Styles: ${styles}\n✏️ Notes: ${note}\n⏰ Submission: ${dateTime}`;
+            try{
+                const res=await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({chat_id:CHAT_ID,text:message})
+                });
+                if(res.ok){
+                    setStatus("Form submitted successfully!");
+                    form.reset();
+                }else{
+                    fallbackSend(message);
+                }
+            }catch(err){
+                fallbackSend(message);
+            }finally{
+                submitBtn.disabled=false;
+            }
+        }
+        function fallbackSend(message){
+            const url=`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(message)}`;
+            window.open(url,"_blank");
+            setStatus("⚠ Direct send failed, opening alternative method in new tab.");
+            form.reset();
+        }
+    </script>
+</body>
+</html>
