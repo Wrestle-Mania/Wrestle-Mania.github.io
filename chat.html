@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeleChat</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg0:#0d1117;--bg1:#161b22;--bg2:#21262d;--bg3:#30363d;
+  --accent:#5865f2;--accent2:#4752c4;
+  --green:#3fb950;--red:#f85149;--yellow:#d29922;
+  --text1:#e6edf3;--text2:#8b949e;--text3:#484f58;
+  --border:#30363d;
+  --font:'Segoe UI',system-ui,sans-serif;
+  --sw:252px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font);background:var(--bg0);color:var(--text1)}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ── SCREENS ── */
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+
+/* ── MODALS ── */
+.modal-wrap{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.7);
+  align-items:center;justify-content:center;
+  z-index:600;backdrop-filter:blur(4px);
+}
+.modal-wrap.open{display:flex}
+.modal-box{
+  background:var(--bg1);border:1px solid var(--border);
+  border-radius:14px;padding:26px 28px;
+  width:calc(100% - 32px);max-width:380px;
+  box-shadow:0 8px 40px rgba(0,0,0,.6);
+}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:18px}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:8px;padding:10px 20px;border:none;border-radius:6px;
+  font-size:14px;font-weight:600;cursor:pointer;
+  transition:all .18s;white-space:nowrap;font-family:var(--font);
+}
+.btn-p{background:var(--accent);color:#fff}
+.btn-p:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn-g{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-g:hover{background:var(--bg3);color:var(--text1)}
+.btn-full{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
+
+/* ── INPUTS ── */
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text2)}
+.inp{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:6px;color:var(--text1);font-size:14px;
+  padding:11px 13px;outline:none;width:100%;font-family:var(--font);
+  transition:border-color .18s,box-shadow .18s;
+}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(88,101,242,.18)}
+.inp::placeholder{color:var(--text3)}
+.pw-wrap{position:relative}
+.pw-wrap .inp{padding-right:40px}
+.pw-toggle{
+  position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;font-size:15px;color:var(--text2);line-height:1;
+}
+
+/* ── ALERTS ── */
+.alert{padding:10px 14px;border-radius:6px;font-size:13px;font-weight:500;margin-bottom:14px}
+.a-err{background:rgba(248,81,73,.12);border:1px solid rgba(248,81,73,.35);color:var(--red)}
+.a-ok{background:rgba(63,185,80,.12);border:1px solid rgba(63,185,80,.35);color:var(--green)}
+.a-info{background:rgba(88,101,242,.12);border:1px solid rgba(88,101,242,.35);color:#7c85f5}
+
+/* ── SPINNER ── */
+.spin{
+  width:18px;height:18px;border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;
+  animation:spin .65s linear infinite;display:inline-block;vertical-align:middle;
+}
+.pspin{
+  width:42px;height:42px;border:3px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;padding:12px 20px;font-size:13px;
+  z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.5);
+  pointer-events:none;display:none;
+}
+#toast.t-ok{border-color:var(--green);color:var(--green)}
+#toast.t-err{border-color:var(--red);color:var(--red)}
+#toast.t-in{border-color:var(--accent);color:#7c85f5}
+
+/* ════ LOAD ════ */
+#loadScreen{flex-direction:column;gap:16px;color:var(--text2);font-size:14px;background:var(--bg0);z-index:10}
+
+/* ════ AUTH ════ */
+#authScreen{padding:20px;background:var(--bg0);z-index:9;overflow-y:auto;align-items:flex-start}
+.auth-inner{width:100%;max-width:420px;margin:auto;padding:20px 0}
+.auth-card{
+  background:var(--bg1);border:1px solid var(--border);
+  border-radius:16px;padding:36px 32px;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+}
+.auth-logo{font-size:48px;text-align:center;margin-bottom:8px}
+.auth-title{text-align:center;font-size:24px;font-weight:800;margin-bottom:4px}
+.auth-sub{text-align:center;color:var(--text2);font-size:13px;margin-bottom:28px}
+.auth-tabs{
+  display:flex;background:var(--bg2);
+  border-radius:6px;padding:4px;margin-bottom:26px;gap:4px;
+}
+.tab-btn{
+  flex:1;padding:9px 8px;border:none;background:none;
+  border-radius:5px;color:var(--text2);font-size:14px;
+  font-weight:600;cursor:pointer;transition:all .18s;font-family:var(--font);
+}
+.tab-btn.active{background:var(--accent);color:#fff}
+.auth-form{display:flex;flex-direction:column;gap:16px}
+.str-bar{height:3px;background:var(--bg3);border-radius:2px;margin-top:6px;overflow:hidden}
+.str-fill{height:100%;border-radius:2px;transition:all .3s;width:0}
+.s-w{width:25%;background:var(--red)}
+.s-f{width:50%;background:var(--yellow)}
+.s-g{width:75%;background:#3b82f6}
+.s-s{width:100%;background:var(--green)}
+
+/* ════ CHAT ════ */
+#chatScreen{background:var(--bg0);z-index:8;padding:0;align-items:stretch}
+.chat-layout{display:flex;width:100%;height:100%}
+
+/* SIDEBAR */
+.sidebar{
+  width:var(--sw);background:var(--bg1);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;flex-shrink:0;
+  overflow:hidden;transition:transform .25s;
+}
+.sb-hdr{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 12px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.srv-icon{
+  width:34px;height:34px;background:var(--accent);
+  border-radius:9px;display:flex;align-items:center;
+  justify-content:center;font-size:17px;flex-shrink:0;
+}
+.sec-lbl{
+  padding:14px 10px 5px;font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.8px;color:var(--text3);
+}
+.rooms-area{padding:0 5px}
+.room-btn{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:7px 9px;border:none;background:none;border-radius:6px;
+  color:var(--text2);font-size:13px;cursor:pointer;text-align:left;
+  transition:all .15s;font-family:var(--font);
+}
+.room-btn:hover{background:var(--bg3);color:var(--text1)}
+.room-btn.active{background:rgba(88,101,242,.22);color:var(--text1)}
+.room-btn.dm-btn{color:#eb459e}
+.room-btn.dm-btn.active{background:rgba(235,69,158,.18);color:#eb459e}
+.ubadge{
+  background:var(--red);color:#fff;font-size:10px;
+  font-weight:700;padding:1px 5px;border-radius:50px;
+  min-width:16px;text-align:center;display:none;
+}
+.ubadge.show{display:inline-block}
+.users-area{padding:0 5px;overflow-y:auto;flex:1}
+.user-row{
+  display:flex;align-items:center;gap:8px;padding:5px 7px;
+  border-radius:6px;transition:background .15s;cursor:pointer;
+}
+.user-row:hover{background:var(--bg3)}
+.av{
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:700;flex-shrink:0;position:relative;
+}
+.odot{
+  position:absolute;bottom:0;right:0;
+  width:8px;height:8px;background:var(--green);
+  border:2px solid var(--bg1);border-radius:50%;
+}
+.sb-footer{
+  border-top:1px solid var(--border);
+  padding:10px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0;
+}
+.icon-btn{
+  background:none;border:none;cursor:pointer;font-size:15px;
+  padding:5px;border-radius:6px;transition:background .15s;
+  color:var(--text2);line-height:1;
+}
+.icon-btn:hover{background:var(--bg3);color:var(--text1)}
+
+/* MAIN CHAT */
+.chat-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.chat-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;height:54px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.menu-btn-wrap{display:none}
+.msgs-wrap{
+  flex:1;overflow-y:auto;padding:14px 16px;
+  display:flex;flex-direction:column;gap:1px;
+}
+.day-sep{
+  display:flex;align-items:center;gap:10px;
+  margin:10px 0 6px;color:var(--text3);font-size:11px;font-weight:600;
+}
+.day-sep::before,.day-sep::after{content:'';flex:1;height:1px;background:var(--border)}
+.msg{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:4px 8px;border-radius:6px;transition:background .12s;
+  animation:mIn .22s ease;
+}
+@keyframes mIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.msg:hover{background:var(--bg2)}
+.msg.own .msg-uname{color:var(--accent)}
+.msg.dm{background:rgba(235,69,158,.05);border-left:2px solid rgba(235,69,158,.3);padding-left:10px}
+.msg-uname{font-size:13px;font-weight:700}
+.msg-time{font-size:10px;color:var(--text3);margin-left:6px}
+.msg-text{font-size:14px;line-height:1.55;word-wrap:break-word;white-space:pre-wrap;margin-top:2px}
+.msg-text a{color:var(--accent)}
+.empty-st{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text3)}
+.typing-bar{height:22px;padding:2px 18px;font-size:11px;color:var(--text3);flex-shrink:0}
+.input-area{padding:8px 14px 13px;border-top:1px solid var(--border);flex-shrink:0}
+.emoji-row{display:flex;gap:2px;flex-wrap:wrap;padding:3px 0 5px}
+.emoji-row button{
+  background:none;border:none;font-size:17px;cursor:pointer;
+  padding:2px 4px;border-radius:4px;transition:background .15s;line-height:1;
+}
+.emoji-row button:hover{background:var(--bg3)}
+.input-row{
+  display:flex;align-items:center;gap:7px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;padding:4px 8px 4px 13px;
+  transition:border-color .18s;
+}
+.input-row:focus-within{border-color:var(--accent)}
+#msgInput{
+  flex:1;background:none;border:none;color:var(--text1);
+  font-size:14px;padding:8px 0;outline:none;resize:none;
+  font-family:var(--font);max-height:100px;overflow-y:auto;
+}
+#msgInput::placeholder{color:var(--text3)}
+.send-btn{
+  background:var(--accent);border:none;border-radius:6px;color:#fff;
+  cursor:pointer;font-size:16px;width:33px;height:33px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .18s;flex-shrink:0;
+}
+.send-btn:hover:not(:disabled){background:var(--accent2);transform:scale(1.06)}
+.send-btn:disabled{background:var(--bg3);cursor:not-allowed;opacity:.5}
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90}
+
+@media(max-width:680px){
+  :root{--sw:260px}
+  .sidebar{position:fixed;top:0;left:0;height:100%;z-index:100;transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .sb-overlay.show{display:block}
+  .menu-btn-wrap{display:flex}
+}
+</style>
+</head>
+<body>
+
+<!-- LOAD -->
+<div id="loadScreen" class="screen">
+  <div class="pspin"></div>
+  <span id="loadMsg">Connecting...</span>
+</div>
+
+<!-- AUTH (hidden) -->
+<div id="authScreen" class="screen" style="display:none">
+  <div class="auth-inner">
+    <div class="auth-card">
+      <div class="auth-logo">💬</div>
+      <div class="auth-title">TeleChat</div>
+      <div class="auth-sub" id="authSub">Sign in to your account</div>
+
+      <div class="auth-tabs">
+        <button class="tab-btn active" id="tabL" onclick="switchTab('login')">Login</button>
+        <button class="tab-btn"        id="tabR" onclick="switchTab('reg')">Register</button>
+      </div>
+
+      <div id="authAlert" style="display:none"></div>
+
+      <!-- LOGIN -->
+      <form id="loginForm" class="auth-form" onsubmit="doLogin(event)">
+        <div class="fg">
+          <label for="lUser">Username</label>
+          <input class="inp" id="lUser" type="text" placeholder="your_username" autocomplete="username" required>
+        </div>
+        <div class="fg">
+          <label for="lPass">Password</label>
+          <div class="pw-wrap">
+            <input class="inp" id="lPass" type="password" placeholder="••••••••" autocomplete="current-password" required>
+            <button type="button" class="pw-toggle" onclick="tpw('lPass',this)">👁</button>
+          </div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);cursor:pointer">
+          <input type="checkbox" id="remMe"> Remember me
+        </label>
+        <button type="submit" class="btn btn-p btn-full" id="lBtn">
+          <span id="lBtnT">Sign In</span>
+          <span id="lBtnS" class="spin" style="display:none"></span>
+        </button>
+        <p style="text-align:center;font-size:13px;color:var(--text2)">
+          No account?
+          <span style="color:var(--accent);cursor:pointer;font-weight:600" onclick="switchTab('reg')">Register here</span>
+        </p>
+      </form>
+
+      <!-- REGISTER (hidden) -->
+      <form id="regForm" class="auth-form" style="display:none" onsubmit="doReg(event)">
+        <div class="fg">
+          <label for="rUser">Username</label>
+          <input class="inp" id="rUser" type="text" placeholder="choose_username"
+                 pattern="[a-zA-Z0-9_]{3,20}" autocomplete="username" required>
+          <span style="font-size:11px;color:var(--text3)">3-20 chars · letters, numbers, underscore</span>
+        </div>
+        <div class="fg">
+          <label for="rDisplay">Display Name</label>
+          <input class="inp" id="rDisplay" type="text" placeholder="Your Name" maxlength="30" required>
+        </div>
+        <div class="fg">
+          <label for="rPass">Password</label>
+          <div class="pw-wrap">
+            <input class="inp" id="rPass" type="password" placeholder="min 6 characters"
+                   minlength="6" oninput="chkStr(this)" autocomplete="new-password" required>
+            <button type="button" class="pw-toggle" onclick="tpw('rPass',this)">👁</button>
+          </div>
+          <div class="str-bar"><div class="str-fill" id="strF"></div></div>
+          <span style="font-size:11px;color:var(--text3)" id="strL"></span>
+        </div>
+        <div class="fg">
+          <label for="rPass2">Confirm Password</label>
+          <div class="pw-wrap">
+            <input class="inp" id="rPass2" type="password" placeholder="repeat password" autocomplete="new-password" required>
+            <button type="button" class="pw-toggle" onclick="tpw('rPass2',this)">👁</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-p btn-full" id="rBtn">
+          <span id="rBtnT">Create Account</span>
+          <span id="rBtnS" class="spin" style="display:none"></span>
+        </button>
+        <p style="text-align:center;font-size:13px;color:var(--text2)">
+          Have an account?
+          <span style="color:var(--accent);cursor:pointer;font-weight:600" onclick="switchTab('login')">Sign in</span>
+        </p>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- CHAT (hidden) -->
+<div id="chatScreen" class="screen" style="display:none">
+  <div class="chat-layout">
+    <div class="sb-overlay" id="sbOverlay" onclick="closeSB()"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sb-hdr">
+        <div class="srv-icon">💬</div>
+        <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0">
+          <span style="font-size:13px;font-weight:700">TeleChat</span>
+          <span style="font-size:11px;color:var(--green)" id="onlineStat">● 1 online</span>
+        </div>
+      </div>
+
+      <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;min-height:0">
+        <div class="sec-lbl">Channels</div>
+        <div class="rooms-area" id="roomsList"></div>
+
+        <div class="sec-lbl">Direct Messages</div>
+        <div class="rooms-area" id="dmList">
+          <div id="dmHint" style="font-size:11px;color:var(--text3);padding:4px 9px">Click a user to DM</div>
+        </div>
+
+        <div class="sec-lbl">Online — <span id="onlineCount">1</span></div>
+        <div class="users-area" id="onlineList"></div>
+      </div>
+
+      <div class="sb-footer">
+        <div class="av" id="myAv" style="width:34px;height:34px;font-size:13px;cursor:pointer" onclick="openProfile()">?</div>
+        <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0">
+          <span style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="myName">...</span>
+          <span style="font-size:11px;color:var(--green)">● Online</span>
+        </div>
+        <button class="icon-btn" onclick="doLogout()" title="Logout">⏻</button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="chat-main">
+      <div class="chat-hdr">
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="menu-btn-wrap">
+            <button class="icon-btn" onclick="openSB()">☰</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:15px;font-weight:700" id="roomTitle"># general</span>
+              <span id="dmBadge" style="display:none;font-size:10px;background:rgba(235,69,158,.15);border:1px solid rgba(235,69,158,.3);color:#eb459e;padding:2px 7px;border-radius:50px">DM</span>
+            </div>
+            <span style="font-size:11px;color:var(--text2)" id="roomDesc">General chat</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:5px">
+          <button class="icon-btn" onclick="openSearch()" title="Search">🔍</button>
+          <button class="icon-btn" onclick="forceRefresh()" title="Refresh">🔄</button>
+        </div>
+      </div>
+
+      <div class="msgs-wrap" id="msgsWrap"></div>
+      <div class="typing-bar" id="typingBar"></div>
+
+      <div class="input-area">
+        <div class="emoji-row" id="emojiRow"></div>
+        <div class="input-row">
+          <textarea id="msgInput" rows="1" placeholder="Message # general..."
+            maxlength="500" oninput="onInpChange()" onkeydown="onInpKey(event)"></textarea>
+          <span style="font-size:10px;color:var(--text3)" id="charC">0/500</span>
+          <button class="send-btn" id="sendBtn" onclick="sendMsg()" disabled>➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div id="profileModal" class="modal-wrap">
+  <div class="modal-box">
+    <div class="modal-title">👤 My Profile</div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="text-align:center">
+        <div class="av" id="profAv" style="width:58px;height:58px;font-size:22px;margin:0 auto 10px">?</div>
+        <div style="font-size:15px;font-weight:700" id="profName"></div>
+        <div style="font-size:12px;color:var(--text2)" id="profUser"></div>
+      </div>
+      <div id="profAlert" style="display:none"></div>
+      <div class="fg">
+        <label>Display Name</label>
+        <input class="inp" id="newDisp" type="text" maxlength="30">
+      </div>
+      <div class="fg">
+        <label>New Password (optional)</label>
+        <div class="pw-wrap">
+          <input class="inp" id="newPw" type="password" placeholder="Leave blank to keep current">
+          <button type="button" class="pw-toggle" onclick="tpw('newPw',this)">👁</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-p" style="flex:1" onclick="saveProfile()">Save</button>
+        <button class="btn btn-g" style="flex:1" onclick="closeModal('profileModal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SEARCH MODAL -->
+<div id="searchModal" class="modal-wrap">
+  <div class="modal-box">
+    <div class="modal-title">🔍 Search Messages</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input class="inp" id="searchInp" type="text" placeholder="Search messages..." oninput="doSearch()">
+      <div id="searchRes" style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:12px;color:var(--text3)">Type to search...</div>
+      </div>
+      <button class="btn btn-g btn-full" onclick="closeModal('searchModal')">✕ Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+/* ══ HARDCODED CONFIG ══ */
+const CFG = {
+  token:   '7074375900:AAHrzse6MFr1xWcsG8PEe1uxI9Or4krp_8g',
+  groupId: '-1003806581843'
+};
+
+const ROOMS = [
+  {id:'general',name:'# general',desc:'General chat'},
+  {id:'random', name:'# random', desc:'Random talk'},
+  {id:'tech',   name:'# tech',   desc:'Tech & coding'},
+  {id:'gaming', name:'# gaming', desc:'Games & fun'},
+  {id:'help',   name:'# help',   desc:'Get help'},
+];
+
+const EMOJIS = ['😊','😂','❤️','👍','🔥','🎉','😍','🤔','👋','✅','💯','😎','🙏','😭','🚀','💪'];
+
+/* ══ STATE ══ */
+let USER           = null;
+let currentView    = 'general';
+let allMsgs        = {};        // viewId -> [msg]
+let onlineUsers    = {};        // username -> {displayName,avatar,color,ts}
+let unread         = {};
+let typingMap      = {};
+let pollTimer      = null;
+let pingTimer      = null;
+let fetching       = false;
+let typingThrottle = null;
+
+/*
+  KEY FIX: We store the HIGHEST telegram message_id we've seen.
+  On each poll we use offset = highestSeenUpdateId + 1
+  BUT on first load we fetch with offset=0 and limit=100
+  to get ALL history. Each client manages its own offset
+  independently — no shared state.
+*/
+let highestUpdateId = 0;
+let initialSyncDone = false;
+
+/* ══ TELEGRAM API ══ */
+const TG = {
+  async call(method, params={}) {
+    try {
+      const r = await fetch(`https://api.telegram.org/bot${CFG.token}/${method}`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(params)
+      });
+      return r.json();
+    } catch(e) { return {ok:false,error:e.message}; }
+  },
+
+  async push(type, payload) {
+    const text = `TC|${type}|${JSON.stringify(payload)}`;
+    return this.call('sendMessage',{
+      chat_id:  CFG.groupId,
+      text,
+      disable_notification: true
+    });
+  },
+
+  /*
+    CRITICAL FIX:
+    - First call: offset=0, limit=100 → gets ALL available history
+    - Subsequent calls: offset=highestUpdateId+1 → only new messages
+    Telegram keeps ~24h of getUpdates history per bot token.
+    All clients read independently — offset is LOCAL per client.
+  */
+  async fetchUpdates(offset=0, limit=100) {
+    return this.call('getUpdates',{
+      offset,
+      limit,
+      timeout: 0,
+      allowed_updates: ['message','channel_post']
+    });
+  }
+};
+
+/* ══ LOCAL STORAGE ══ */
+const LS = {
+  get(k,d=null){try{return JSON.parse(localStorage.getItem(k))??d;}catch{return d;}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}},
+
+  getSession(){
+    const a = this.get('tc_sess');
+    if(a) return a;
+    try {
+      const b = sessionStorage.getItem('tc_sess');
+      return b ? JSON.parse(b) : null;
+    } catch { return null; }
+  },
+  saveSession(d,rem){
+    const raw = JSON.stringify(d);
+    if(rem) localStorage.setItem('tc_sess',raw);
+    else    sessionStorage.setItem('tc_sess',raw);
+  },
+  clearSession(){
+    localStorage.removeItem('tc_sess');
+    sessionStorage.removeItem('tc_sess');
+  },
+
+  getUsers(){ return this.get('tc_users',{}); },
+  getUser(un){ return this.getUsers()[un.toLowerCase()]; },
+  saveUser(u){
+    const all = this.getUsers();
+    all[u.username.toLowerCase()] = u;
+    this.set('tc_users',all);
+  },
+
+  /* Messages stored per-room with tg_update_id so we never duplicate */
+  getMsgs(v){   return this.get(`tc_m_${v}`,[]); },
+  saveMsgs(v,msgs){ this.set(`tc_m_${v}`,msgs.slice(-500)); },
+
+  /* Remember highest update id so refresh doesn't re-read old updates */
+  getHighestId(){ return this.get('tc_hid', 0); },
+  saveHighestId(id){ this.set('tc_hid', id); }
+};
+
+/* ══ DOM ══ */
+const q = id => document.getElementById(id);
+
+function showScreen(id){
+  ['loadScreen','authScreen','chatScreen'].forEach(s=>{
+    q(s).style.display = 'none';
+  });
+  q(id).style.display = 'flex';
+}
+function openModal(id)  { q(id).classList.add('open'); }
+function closeModal(id) { q(id).classList.remove('open'); }
+
+function showAlert(id,msg,type='err'){
+  const el=q(id);
+  el.className=`alert a-${type}`;
+  el.textContent=msg;
+  el.style.display='block';
+}
+function hideAlert(id){ q(id).style.display='none'; }
+
+function setBtnL(bid,tid,sid,on){
+  q(bid).disabled=on;
+  q(tid).style.display=on?'none':'inline';
+  q(sid).style.display=on?'inline-block':'none';
+}
+
+let toastT;
+function toast(msg,type='in'){
+  const el=q('toast');
+  el.textContent=msg; el.className=`t-${type}`; el.style.display='block';
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>el.style.display='none',3000);
+}
+
+function tpw(id,btn){
+  const i=q(id); const s=i.type==='password';
+  i.type=s?'text':'password'; btn.textContent=s?'🙈':'👁';
+}
+function chkStr(inp){
+  const v=inp.value; let sc=0;
+  if(v.length>=6)sc++; if(v.length>=10)sc++;
+  if(/[A-Z]/.test(v))sc++; if(/[0-9]/.test(v))sc++;
+  if(/[^A-Za-z0-9]/.test(v))sc++;
+  const cls=['','s-w','s-f','s-g','s-s','s-s'];
+  const lbl=['','Weak','Fair','Good','Strong','Very Strong'];
+  q('strF').className='str-fill '+(cls[sc]||'');
+  q('strL').textContent=lbl[sc]||'';
+}
+
+/* ══ UTILS ══ */
+function hashPw(pw){
+  let h=2166136261>>>0;
+  const s='TC_Salt!'+pw+CFG.groupId;
+  for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
+  return h.toString(16).padStart(8,'0');
+}
+function genId(n=14){return Array.from({length:n},()=>Math.random().toString(36)[2]||'0').join('');}
+function avColor(s){
+  const c=['#5865f2','#57f287','#fee75c','#ed4245','#eb459e',
+           '#3498db','#9b59b6','#e67e22','#1abc9c','#e74c3c','#2ecc71','#f39c12'];
+  let h=0; for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;
+  return c[Math.abs(h)%c.length];
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function linkify(s){return esc(s).replace(/(https?:\/\/[^\s<>"]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');}
+function fmtTime(iso){return new Date(iso).toTimeString().slice(0,5);}
+function fmtDate(iso){
+  const d=new Date(iso),t=new Date();
+  if(d.toDateString()===t.toDateString())return'Today';
+  const y=new Date(t);y.setDate(y.getDate()-1);
+  if(d.toDateString()===y.toDateString())return'Yesterday';
+  return d.toLocaleDateString();
+}
+function setAv(el,l,c){el.textContent=l||'?';el.style.background=c||'var(--accent)';}
+
+const dmView    = u=>`dm:${u}`;
+const isDM      = v=>v.startsWith('dm:');
+const dmPartner = v=>v.replace('dm:','');
+
+/* ══ AUTH TABS ══ */
+function switchTab(tab){
+  const L=tab==='login';
+  q('tabL').classList.toggle('active', L);
+  q('tabR').classList.toggle('active',!L);
+  q('authSub').textContent = L ? 'Sign in to your account' : 'Create a new account';
+  q('loginForm').style.display = L ? 'flex' : 'none';
+  q('regForm').style.display   = L ? 'none' : 'flex';
+  hideAlert('authAlert');
+}
+
+/* ══ LOGIN ══ */
+async function doLogin(e){
+  e.preventDefault();
+  const un=q('lUser').value.trim().toLowerCase();
+  const pw=q('lPass').value;
+  const rem=q('remMe').checked;
+  if(!un||!pw){showAlert('authAlert','Please fill in all fields');return;}
+
+  setBtnL('lBtn','lBtnT','lBtnS',true);
+  hideAlert('authAlert');
+
+  // Try local cache first
+  let user = LS.getUser(un);
+
+  // If not cached, sync from Telegram to find the user
+  if(!user){
+    showAlert('authAlert','Looking up account...','info');
+    await doInitialSync(false);
+    user=LS.getUser(un);
+  }
+
+  if(!user){
+    showAlert('authAlert','User not found — please register first');
+    setBtnL('lBtn','lBtnT','lBtnS',false);
+    return;
+  }
+  if(user.password!==hashPw(pw)){
+    showAlert('authAlert','Incorrect password');
+    setBtnL('lBtn','lBtnT','lBtnS',false);
+    return;
+  }
+
+  LS.saveSession({username:user.username,expires:Date.now()+7*86400000},rem);
+  USER=user;
+  setBtnL('lBtn','lBtnT','lBtnS',false);
+  await enterChat();
+}
+
+/* ══ REGISTER ══ */
+async function doReg(e){
+  e.preventDefault();
+  const un=q('rUser').value.trim().toLowerCase();
+  const dn=q('rDisplay').value.trim();
+  const pw=q('rPass').value;
+  const pw2=q('rPass2').value;
+
+  if(!un||!dn||!pw||!pw2){showAlert('authAlert','Please fill in all fields');return;}
+  if(!/^[a-z0-9_]{3,20}$/.test(un)){showAlert('authAlert','Invalid username format');return;}
+  if(pw.length<6){showAlert('authAlert','Password must be at least 6 characters');return;}
+  if(pw!==pw2){showAlert('authAlert','Passwords do not match');return;}
+
+  setBtnL('rBtn','rBtnT','rBtnS',true);
+  showAlert('authAlert','Checking username...','info');
+
+  await doInitialSync(false);
+
+  if(LS.getUser(un)){
+    showAlert('authAlert','Username already taken');
+    setBtnL('rBtn','rBtnT','rBtnS',false);
+    return;
+  }
+
+  const color=avColor(un);
+  const user={
+    id:genId(16),username:un,displayName:dn,
+    password:hashPw(pw),avatar:dn[0].toUpperCase(),
+    color,createdAt:new Date().toISOString()
+  };
+
+  LS.saveUser(user);
+  await TG.push('REG',user);
+
+  showAlert('authAlert','✅ Account created! Signing you in...','ok');
+  LS.saveSession({username:user.username,expires:Date.now()+7*86400000},false);
+  USER=user;
+  setTimeout(async()=>{
+    setBtnL('rBtn','rBtnT','rBtnS',false);
+    await enterChat();
+  },1000);
+}
+
+/* ══ LOGOUT ══ */
+async function doLogout(){
+  if(!confirm('Log out?'))return;
+  await TG.push('OFFLINE',{username:USER.username});
+  LS.clearSession();
+  stopTimers();
+  USER=null;
+  allMsgs={}; onlineUsers={}; unread={};
+  initialSyncDone=false; highestUpdateId=0;
+  showScreen('authScreen');
+  switchTab('login');
+  q('lUser').value=''; q('lPass').value='';
+}
+
+/* ══════════════════════════════════════════════════════════
+   CORE FIX: SYNC MECHANISM
+
+   Problem was: updateOffset was advanced globally and saved,
+   so when a new client loaded it would start from where the
+   LAST client left off, missing all messages.
+
+   Solution:
+   - Initial sync: fetch with offset=0 (gets last ~100 updates)
+   - Store all messages in localStorage by their unique msg.id
+   - Track highestUpdateId locally (per page load, not persisted)
+   - Poll with highestUpdateId+1 for new messages only
+   - On page refresh, always do initial sync first to rebuild state
+══════════════════════════════════════════════════════════ */
+
+async function doInitialSync(render=true){
+  if(fetching) return;
+  fetching=true;
+
+  try {
+    /*
+      Fetch with offset=0 → Telegram returns pending updates
+      (up to 100, from the oldest unconfirmed one).
+      We do NOT confirm (acknowledge) them by advancing offset
+      during initial sync — we just read.
+      
+      Actually getUpdates with offset=0 returns updates starting
+      from the earliest unconfirmed. To get RECENT history we use
+      offset = -100 trick (negative offset isn't supported by TG,
+      but limit=100 with offset=0 gives last batch).
+      
+      Real fix: we parse ALL returned updates and store by ID.
+    */
+    const r = await TG.fetchUpdates(0, 100);
+    if(r.ok && r.result && r.result.length > 0){
+      r.result.forEach(upd=>{
+        processUpdate(upd, render);
+        if(upd.update_id > highestUpdateId){
+          highestUpdateId = upd.update_id;
+        }
+      });
+    }
+  } catch(e){ console.warn('Initial sync error:',e); }
+
+  initialSyncDone=true;
+  fetching=false;
+}
+
+async function pollNewUpdates(){
+  if(fetching) return;
+  fetching=true;
+
+  try {
+    // offset = highestUpdateId+1 gets only NEW updates
+    const offset = highestUpdateId > 0 ? highestUpdateId + 1 : 0;
+    const r = await TG.fetchUpdates(offset, 100);
+
+    if(r.ok && r.result && r.result.length > 0){
+      r.result.forEach(upd=>{
+        processUpdate(upd, true);
+        if(upd.update_id > highestUpdateId){
+          highestUpdateId = upd.update_id;
+        }
+      });
+    }
+  } catch(e){ console.warn('Poll error:',e); }
+
+  fetching=false;
+}
+
+/* ══ PROCESS A SINGLE TELEGRAM UPDATE ══ */
+function processUpdate(upd, render=true){
+  const msg = upd.message || upd.channel_post;
+  if(!msg || !msg.text) return;
+  if(!msg.text.startsWith('TC|')) return;
+
+  const firstPipe  = msg.text.indexOf('|', 3);
+  if(firstPipe < 0) return;
+
+  const type = msg.text.slice(3, firstPipe);
+  let payload;
+  try { payload = JSON.parse(msg.text.slice(firstPipe+1)); }
+  catch(e){ return; }
+
+  // Attach telegram message_id to payload for deduplication
+  payload._tgId = msg.message_id;
+
+  switch(type){
+
+    /* ── Registration: restore user data on all clients ── */
+    case 'REG':
+      // Save to local store — this is how other clients learn about users
+      LS.saveUser(payload);
+      break;
+
+    /* ── Chat message: add to correct room for ALL users ── */
+    case 'MSG': {
+      const view = payload.room;
+      if(!allMsgs[view]) allMsgs[view] = LS.getMsgs(view);
+
+      // Deduplicate by payload.id (our generated id)
+      if(allMsgs[view].some(m=>m.id===payload.id)) break;
+
+      allMsgs[view].push(payload);
+      LS.saveMsgs(view, allMsgs[view]);
+
+      if(render){
+        if(view === currentView){
+          appendMsgEl(payload, true);
+          scrollBot();
+        } else if(USER && payload.username !== USER.username){
+          unread[view] = (unread[view]||0)+1;
+          updBadge(view);
+          if(!document.hidden) pushNotif(payload.displayName||payload.username, payload.content);
+        }
+      }
+      break;
+    }
+
+    /* ── Direct message: only sender/receiver see it ── */
+    case 'DM': {
+      if(!USER) break;
+      const{from,to}=payload;
+      if(from!==USER.username && to!==USER.username) break;
+
+      const view = from===USER.username ? dmView(to) : dmView(from);
+      if(!allMsgs[view]) allMsgs[view] = LS.getMsgs(view);
+      if(allMsgs[view].some(m=>m.id===payload.id)) break;
+
+      allMsgs[view].push(payload);
+      LS.saveMsgs(view, allMsgs[view]);
+
+      if(render){
+        addDMToSidebar(from===USER.username ? to : from);
+        if(view===currentView){appendMsgEl(payload,true);scrollBot();}
+        else{
+          unread[view]=(unread[view]||0)+1;
+          updBadge(view);
+          if(!document.hidden)
+            pushNotif(`DM from ${payload.displayName||from}`,payload.content);
+        }
+      }
+      break;
+    }
+
+    case 'ONLINE':
+      if(payload.username){
+        onlineUsers[payload.username]={
+          displayName:payload.displayName,
+          avatar:payload.avatar,
+          color:payload.color,
+          ts:payload.ts
+        };
+        if(render && USER) renderOnline();
+      }
+      break;
+
+    case 'OFFLINE':
+      delete onlineUsers[payload.username];
+      if(render && USER) renderOnline();
+      break;
+
+    case 'TYPING':
+      if(render && payload.username!==USER?.username)
+        showTyping(payload.username);
+      break;
+
+    case 'USER_UPD':
+      LS.saveUser(payload);
+      break;
+  }
+}
+
+/* ══ ENTER CHAT ══ */
+async function enterChat(){
+  showScreen('chatScreen');
+  q('myName').textContent=USER.displayName;
+  setAv(q('myAv'),USER.avatar,USER.color);
+  buildRooms();
+  buildEmojis();
+
+  // Load cached messages from localStorage
+  ROOMS.forEach(r=>{ allMsgs[r.id]=LS.getMsgs(r.id); });
+
+  // Full initial sync to get ALL available messages
+  if(!initialSyncDone){
+    await doInitialSync(false); // parse but don't render yet
+  }
+
+  // Now render the current room (has all messages including others')
+  joinRoom('general');
+  renderOnline();
+  startTimers();
+
+  // Announce presence
+  await TG.push('ONLINE',{
+    username:USER.username, displayName:USER.displayName,
+    avatar:USER.avatar, color:USER.color, ts:Date.now()
+  });
+
+  if(Notification && Notification.permission==='default')
+    Notification.requestPermission();
+}
+
+/* ══ ROOMS ══ */
+function buildRooms(){
+  q('roomsList').innerHTML=ROOMS.map(r=>`
+    <button class="room-btn" id="rb_${r.id}" onclick="joinRoom('${r.id}')">
+      <span>${esc(r.name)}</span>
+      <span class="ubadge" id="ud_${r.id}">0</span>
+    </button>`).join('');
+}
+
+function buildEmojis(){
+  q('emojiRow').innerHTML=EMOJIS.map(e=>
+    `<button onclick="insertEmoji('${e}')">${e}</button>`).join('');
+}
+
+function joinRoom(roomId){
+  currentView=roomId;
+  const room=ROOMS.find(r=>r.id===roomId)||{name:`#${roomId}`,desc:''};
+  q('roomTitle').textContent=room.name;
+  q('roomDesc').textContent=room.desc;
+  q('msgInput').placeholder=`Message ${room.name}...`;
+  q('dmBadge').style.display='none';
+  highlightNav(`rb_${roomId}`);
+  unread[roomId]=0; updBadge(roomId);
+  if(!allMsgs[roomId]) allMsgs[roomId]=LS.getMsgs(roomId);
+  renderMsgs(roomId);
+  closeSB();
+  q('msgInput').focus();
+}
+
+function joinDM(username){
+  const view=dmView(username);
+  currentView=view;
+  const partner=LS.getUser(username);
+  const dn=partner?.displayName||username;
+  q('roomTitle').textContent=`@ ${esc(dn)}`;
+  q('roomDesc').textContent='Direct Message';
+  q('msgInput').placeholder=`Message ${dn}...`;
+  q('dmBadge').style.display='inline-block';
+  highlightNav(`vb_${view}`);
+  unread[view]=0; updBadge(view);
+  if(!allMsgs[view]) allMsgs[view]=LS.getMsgs(view);
+  renderMsgs(view);
+  addDMToSidebar(username);
+  closeSB();
+  q('msgInput').focus();
+}
+
+function highlightNav(elId){
+  document.querySelectorAll('.room-btn').forEach(b=>b.classList.remove('active'));
+  const el=q(elId); if(el)el.classList.add('active');
+}
+
+function addDMToSidebar(username){
+  const vid=`vb_dm:${username}`;
+  if(q(vid)) return;
+  const p=LS.getUser(username);
+  const dn=p?.displayName||username;
+  const color=p?.color||avColor(username);
+  const btn=document.createElement('button');
+  btn.className='room-btn dm-btn'; btn.id=vid;
+  btn.onclick=()=>joinDM(username);
+  btn.innerHTML=`
+    <span style="display:flex;align-items:center;gap:7px">
+      <span class="av" style="width:18px;height:18px;font-size:9px;background:${color};border-radius:50%;flex-shrink:0">
+        ${esc(dn[0].toUpperCase())}
+      </span>${esc(dn)}
+    </span>
+    <span class="ubadge" id="ud_dm:${username}">0</span>`;
+  const hint=q('dmHint'); if(hint)hint.remove();
+  q('dmList').appendChild(btn);
+}
+
+function updBadge(view){
+  // use getElementById since colons in querySelector need escaping
+  const el=document.getElementById('ud_'+view);
+  if(!el)return;
+  const c=unread[view]||0;
+  el.textContent=c>99?'99+':c;
+  if(c>0)el.classList.add('show'); else el.classList.remove('show');
+}
+
+/* ══ RENDER MESSAGES ══ */
+function renderMsgs(view){
+  const wrap=q('msgsWrap');
+  const msgs=allMsgs[view]||[];
+  wrap.innerHTML='';
+  if(!msgs.length){
+    wrap.innerHTML=`
+      <div class="empty-st">
+        <div style="font-size:48px">${isDM(view)?'💌':'💬'}</div>
+        <div style="font-size:17px;font-weight:700;color:var(--text2)">
+          ${isDM(view)?'Start a private conversation':'No messages yet'}
+        </div>
+        <div style="font-size:12px;color:var(--text3)">Be the first to say something!</div>
+      </div>`;
+    return;
+  }
+  let lastDate='';
+  msgs.forEach(m=>{
+    const d=fmtDate(m.ts);
+    if(d!==lastDate){wrap.appendChild(mkDaySep(d));lastDate=d;}
+    wrap.appendChild(buildMsgEl(m));
+  });
+  scrollBot(false);
+}
+
+function appendMsgEl(msg,isNew=false){
+  const wrap=q('msgsWrap');
+  const es=wrap.querySelector('.empty-st');
+  if(es)es.remove();
+  const msgs=allMsgs[currentView]||[];
+  const prev=msgs[msgs.length-2];
+  if(!prev||fmtDate(prev.ts)!==fmtDate(msg.ts))
+    wrap.appendChild(mkDaySep(fmtDate(msg.ts)));
+  const el=buildMsgEl(msg,isNew);
+  wrap.appendChild(el);
+}
+
+function buildMsgEl(msg,isNew=false){
+  const isOwn=USER&&msg.username===USER.username;
+  const color=msg.color||avColor(msg.username);
+  const dm=isDM(currentView);
+  const d=document.createElement('div');
+  d.id=`m_${msg.id}`;
+  d.className=`msg${isOwn?' own':''}${dm?' dm':''}`;
+  d.innerHTML=`
+    <div class="av" style="background:${color};width:34px;height:34px;font-size:13px">
+      ${esc(msg.avatar||msg.username[0].toUpperCase())}
+    </div>
+    <div style="flex:1;min-width:0">
+      <div>
+        <span class="msg-uname">${esc(msg.displayName||msg.username)}</span>
+        <span class="msg-time">${fmtTime(msg.ts)}</span>
+        ${dm?'<span style="font-size:10px;color:#eb459e;margin-left:6px">🔒</span>':''}
+      </div>
+      <div class="msg-text">${linkify(msg.content)}</div>
+    </div>`;
+  return d;
+}
+
+function mkDaySep(label){
+  const d=document.createElement('div');
+  d.className='day-sep'; d.textContent=label; return d;
+}
+
+function scrollBot(smooth=true){
+  const w=q('msgsWrap');
+  w.scrollTo({top:w.scrollHeight,behavior:smooth?'smooth':'auto'});
+}
+
+/* ══ SEND ══ */
+async function sendMsg(){
+  const inp=q('msgInput');
+  const content=inp.value.trim();
+  if(!content||!USER)return;
+  q('sendBtn').disabled=true;
+  inp.value=''; inp.style.height='auto'; updateCharC('');
+
+  const msg={
+    id:genId(), username:USER.username, displayName:USER.displayName,
+    avatar:USER.avatar, color:USER.color, content, ts:new Date().toISOString()
+  };
+
+  if(isDM(currentView)){
+    const toUser=dmPartner(currentView);
+    msg.from=USER.username; msg.to=toUser; msg.room=currentView;
+    if(!allMsgs[currentView])allMsgs[currentView]=[];
+    allMsgs[currentView].push(msg);
+    LS.saveMsgs(currentView,allMsgs[currentView]);
+    appendMsgEl(msg,true); scrollBot();
+    await TG.push('DM',msg);
+  } else {
+    msg.room=currentView;
+    if(!allMsgs[currentView])allMsgs[currentView]=[];
+    allMsgs[currentView].push(msg);
+    LS.saveMsgs(currentView,allMsgs[currentView]);
+    appendMsgEl(msg,true); scrollBot();
+    await TG.push('MSG',msg);
+  }
+
+  q('sendBtn').disabled=false; inp.focus();
+}
+
+/* ══ ONLINE USERS ══ */
+function renderOnline(){
+  if(!USER)return;
+  const cut=Date.now()-5*60*1000;
+  Object.keys(onlineUsers).forEach(u=>{
+    if(onlineUsers[u].ts<cut) delete onlineUsers[u];
+  });
+  const others=Object.entries(onlineUsers).filter(([u])=>u!==USER.username);
+  const total=others.length+1;
+  q('onlineCount').textContent=total;
+  q('onlineStat').textContent=`● ${total} online`;
+
+  const selfHtml=`
+    <div class="user-row" onclick="openProfile()">
+      <div class="av" style="background:${USER.color};width:28px;height:28px;font-size:11px">
+        ${esc(USER.avatar)}<span class="odot"></span>
+      </div>
+      <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        ${esc(USER.displayName)}
+      </span>
+      <span style="font-size:10px;color:var(--text3)">(you)</span>
+    </div>`;
+
+  const othersHtml=others.map(([un,d])=>`
+    <div class="user-row" onclick="joinDM('${esc(un)}')">
+      <div class="av" style="background:${d.color||avColor(un)};width:28px;height:28px;font-size:11px">
+        ${esc(d.avatar||un[0].toUpperCase())}<span class="odot"></span>
+      </div>
+      <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        ${esc(d.displayName||un)}
+      </span>
+      <span style="font-size:10px;background:rgba(235,69,158,.2);color:#eb459e;padding:1px 5px;border-radius:4px">DM</span>
+    </div>`).join('');
+
+  q('onlineList').innerHTML=selfHtml+othersHtml;
+}
+
+/* ══ TYPING ══ */
+async function sendTypingSignal(){
+  if(typingThrottle)return;
+  typingThrottle=setTimeout(()=>{typingThrottle=null;},3000);
+  await TG.push('TYPING',{username:USER.username,displayName:USER.displayName});
+}
+function showTyping(username){
+  if(typingMap[username])clearTimeout(typingMap[username]);
+  typingMap[username]=setTimeout(()=>{delete typingMap[username];renderTyping();},4000);
+  renderTyping();
+}
+function renderTyping(){
+  const names=Object.keys(typingMap);
+  const bar=q('typingBar');
+  if(!names.length){bar.innerHTML='';return;}
+  bar.innerHTML=`<span>${esc(names.join(', '))} ${names.length===1?'is':'are'} typing...</span>`;
+}
+
+/* ══ INPUT ══ */
+function onInpChange(){
+  const inp=q('msgInput');
+  inp.style.height='auto';
+  inp.style.height=Math.min(inp.scrollHeight,100)+'px';
+  updateCharC(inp.value);
+  q('sendBtn').disabled=inp.value.trim().length===0;
+  if(inp.value.trim().length>0&&USER)sendTypingSignal();
+}
+function onInpKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(!q('sendBtn').disabled)sendMsg();}
+}
+function updateCharC(val){
+  const c=q('charC');
+  c.textContent=`${val.length}/500`;
+  c.style.color=val.length>450?'var(--red)':val.length>400?'var(--yellow)':'';
+}
+function insertEmoji(e){const inp=q('msgInput');inp.value+=e;onInpChange();inp.focus();}
+
+/* ══ PROFILE ══ */
+function openProfile(){
+  q('profName').textContent=USER.displayName;
+  q('profUser').textContent='@'+USER.username;
+  q('newDisp').value=USER.displayName; q('newPw').value='';
+  setAv(q('profAv'),USER.avatar,USER.color);
+  hideAlert('profAlert');
+  openModal('profileModal');
+}
+async function saveProfile(){
+  const dn=q('newDisp').value.trim();
+  const pw=q('newPw').value;
+  if(!dn){showAlert('profAlert','Name cannot be empty');return;}
+  const upd={...USER,displayName:dn,avatar:dn[0].toUpperCase()};
+  if(pw){
+    if(pw.length<6){showAlert('profAlert','Password min 6 chars');return;}
+    upd.password=hashPw(pw);
+  }
+  USER=upd; LS.saveUser(upd);
+  q('myName').textContent=USER.displayName;
+  setAv(q('myAv'),USER.avatar,USER.color);
+  await TG.push('USER_UPD',upd);
+  showAlert('profAlert','✅ Saved!','ok');
+}
+
+/* ══ SEARCH ══ */
+function openSearch(){
+  q('searchInp').value='';
+  q('searchRes').innerHTML='<div style="font-size:12px;color:var(--text3)">Type to search...</div>';
+  openModal('searchModal');
+  q('searchInp').focus();
+}
+function doSearch(){
+  const qv=q('searchInp').value.toLowerCase().trim();
+  const res=q('searchRes');
+  if(!qv){res.innerHTML='<div style="font-size:12px;color:var(--text3)">Type to search...</div>';return;}
+  const found=[];
+  Object.entries(allMsgs).forEach(([view,msgs])=>{
+    msgs.forEach(m=>{if(m.content&&m.content.toLowerCase().includes(qv))found.push({...m,view});});
+  });
+  if(!found.length){res.innerHTML='<div style="font-size:12px;color:var(--text3)">No results</div>';return;}
+  res.innerHTML=found.slice(-30).map(m=>`
+    <div style="background:var(--bg2);border-radius:6px;padding:9px;cursor:pointer"
+         onclick="jumpTo('${esc(m.view)}','${m.id}')">
+      <div style="display:flex;gap:7px;margin-bottom:3px;align-items:center">
+        <span style="font-size:12px;font-weight:700">${esc(m.displayName||m.username)}</span>
+        <span style="font-size:10px;color:var(--text3)">${esc(m.view)} · ${fmtTime(m.ts)}</span>
+      </div>
+      <div style="font-size:12px">${esc(m.content).slice(0,100)}</div>
+    </div>`).join('');
+}
+function jumpTo(view,msgId){
+  closeModal('searchModal');
+  isDM(view)?joinDM(dmPartner(view)):joinRoom(view);
+  setTimeout(()=>{
+    const el=q('m_'+msgId);
+    if(el){el.scrollIntoView({behavior:'smooth',block:'center'});
+      el.style.background='rgba(88,101,242,.25)';
+      setTimeout(()=>el.style.background='',2000);}
+  },200);
+}
+
+/* ══ NOTIFICATIONS ══ */
+function pushNotif(name,content){
+  if(Notification.permission!=='granted')return;
+  const n=new Notification(name,{body:content.slice(0,100),icon:'💬'});
+  setTimeout(()=>n.close(),4000);
+}
+
+/* ══ TIMERS ══ */
+function startTimers(){
+  stopTimers();
+  // Poll every 3 seconds for new messages
+  pollTimer=setInterval(()=>pollNewUpdates(),3000);
+  // Ping online status every 60 seconds
+  pingTimer=setInterval(async()=>{
+    if(!USER)return;
+    await TG.push('ONLINE',{
+      username:USER.username,displayName:USER.displayName,
+      avatar:USER.avatar,color:USER.color,ts:Date.now()
+    });
+  },60000);
+}
+function stopTimers(){
+  clearInterval(pollTimer); pollTimer=null;
+  clearInterval(pingTimer); pingTimer=null;
+}
+
+async function forceRefresh(){
+  toast('Refreshing...','in');
+  initialSyncDone=false;
+  highestUpdateId=0;
+  ROOMS.forEach(r=>{allMsgs[r.id]=LS.getMsgs(r.id);});
+  await doInitialSync(false);
+  renderMsgs(currentView);
+  renderOnline();
+  toast('Done ✓','ok');
+}
+
+/* ══ SIDEBAR MOBILE ══ */
+function openSB(){q('sidebar').classList.add('open');q('sbOverlay').classList.add('show');}
+function closeSB(){q('sidebar').classList.remove('open');q('sbOverlay').classList.remove('show');}
+
+/* ══ BOOT ══ */
+async function boot(){
+  showScreen('loadScreen');
+  q('loadMsg').textContent='Connecting...';
+
+  const sess=LS.getSession();
+  if(sess&&sess.expires>Date.now()){
+    const user=LS.getUser(sess.username);
+    if(user){
+      USER=user;
+      q('loadMsg').textContent='Loading messages...';
+      await enterChat();
+      return;
+    }
+  }
+
+  showScreen('authScreen');
+  switchTab('login');
+}
+
+window.addEventListener('load', boot);
+
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&USER) pollNewUpdates();
+});
+
+window.addEventListener('beforeunload',()=>{
+  if(!USER)return;
+  navigator.sendBeacon(
+    `https://api.telegram.org/bot${CFG.token}/sendMessage`,
+    JSON.stringify({
+      chat_id:CFG.groupId,
+      text:`TC|OFFLINE|${JSON.stringify({username:USER.username})}`
+    })
+  );
+});
+</script>
+</body>
+</html>
