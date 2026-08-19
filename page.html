@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Live Status</title>
+<style>
+  body { font-family: monospace; background:#111; color:#eee; padding:2rem; }
+  pre { background:#222; padding:1rem; border-radius:6px; white-space:pre-wrap; word-break:break-all; }
+  #status { color:#888; font-size:0.9rem; margin-top:0.5rem; }
+</style>
+</head>
+<body>
+<h1>Current Tunnel</h1>
+<pre id="output">loading...</pre>
+<div id="status"></div>
+
+<script>
+// Same Pantry ID and basket name used by update_ngrok.py.
+const PANTRY_ID = "5fbef6b9-aa98-4669-8bef-d4c8e5f0c215";
+const BASKET_NAME = "ngrok-status";
+const BASKET_URL = `https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/${BASKET_NAME}`;
+const POLL_MS = 15000; // Pantry's free tier throttles hard on rapid polling
+
+async function refresh() {
+  try {
+    const res = await fetch(BASKET_URL, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+    document.getElementById("status").textContent = "Last checked: " + new Date().toLocaleTimeString();
+  } catch (err) {
+    document.getElementById("output").textContent = "unavailable";
+    document.getElementById("status").textContent = "Error: " + err.message;
+  }
+}
+
+refresh();
+setInterval(refresh, POLL_MS);
+</script>
+</body>
+</html>
