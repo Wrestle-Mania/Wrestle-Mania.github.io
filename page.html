@@ -19,18 +19,31 @@
 const PANTRY_ID = "5fbef6b9-aa98-4669-8bef-d4c8e5f0c215";
 const BASKET_NAME = "ngrok-status";
 const BASKET_URL = `https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/${BASKET_NAME}`;
-const POLL_MS = 15000; // Pantry's free tier throttles hard on rapid polling
+const POLL_MS = 30000; // Pantry's free tier throttles hard on rapid polling
+let lastGoodData = null;
+let consecutiveFailures = 0;
 
 async function refresh() {
   try {
     const res = await fetch(BASKET_URL, { cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
+    lastGoodData = data;
+    consecutiveFailures = 0;
     document.getElementById("output").textContent = JSON.stringify(data, null, 2);
     document.getElementById("status").textContent = "Last checked: " + new Date().toLocaleTimeString();
   } catch (err) {
-    document.getElementById("output").textContent = "unavailable";
-    document.getElementById("status").textContent = "Error: " + err.message;
+    consecutiveFailures++;
+    // A single blip (throttling, a dropped request) shouldn't blank the page --
+    // keep showing the last known-good value until failures pile up.
+    if (lastGoodData && consecutiveFailures < 3) {
+      document.getElementById("output").textContent = JSON.stringify(lastGoodData, null, 2);
+      document.getElementById("status").textContent =
+        `Stale (fetch failed ${consecutiveFailures}x): ${err.message}`;
+    } else {
+      document.getElementById("output").textContent = "unavailable";
+      document.getElementById("status").textContent = "Error: " + err.message;
+    }
   }
 }
 
