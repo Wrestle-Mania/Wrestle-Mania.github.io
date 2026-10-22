@@ -199,7 +199,7 @@ if(a.k!=b.k){const o=a.k?a:b,n=a.k?b:a,r=n.c.src[n.i];if(r&&r.id==o.c.id&&r.o==o
 const dup=l=>(l.id==B.id&&l.k==a.k&&l.i==a.i&&l.k2==b.k&&l.j==b.i)||(l.id==A.id&&l.k==b.k&&l.i==b.i&&l.k2==a.k&&l.j==a.i);
 if((A.lk||[]).some(dup)||(B.lk||[]).some(dup))return toast('Those pins are already joined');
 A.lk=A.lk||[];A.lk.push({k:a.k,i:a.i,id:B.id,k2:b.k,j:b.i});
-toast(a.k==b.k?(a.k?'Two outputs joined into one net. If they drive different values the wire turns red (short circuit).':'Two inputs joined: both pins now share one net.'):'Pins joined into one net (that input already had a wire, so both drivers share it).')}
+toast(a.k==b.k?(a.k?'Two outputs joined into one net. Same values are fine; if they disagree the net resolves low and the wire turns red.':'Two inputs joined: both pins now share one net.'):'Pins joined into one net (that input already had a wire, so both drivers share it).')}
 
 /* ---- microcontroller boards ---- */
 const BRD={},R_=(a,b)=>Array.from({length:b-a+1},(_,i)=>a+i);
@@ -638,7 +638,7 @@ P.innerHTML=h;P.hidden=false}
 if(K.cpu){const cp=c.cpu,s=$('#vps');if(s)s.textContent=!c.code?'no program':cp&&cp.err?'error: '+cp.err:cp&&cp.gen?'running · program time '+(cp.vt/1000).toFixed(1)+' s':cp&&cp.off?'stopped':'idle'}}
 function vpSet(k,v){if(!VPC)return;VPC[k]=+v;const s=(KS[VPC.k].sl||[]).find(q=>q.k==k),b=$('#vv_'+k),n=$('#vn_'+k);if(s&&s.names){if(b)b.textContent=s.names[+v]}else if(n){if(document.activeElement!==n)n.value=v}else if(b&&s)b.textContent=v+' '+s.u;save()}
 function vpNum(k,v){if(v===''||isNaN(v)||!VPC)return;const s=(KS[VPC.k].sl||[]).find(q=>q.k==k);v=cl(+v,s.min,s.max);const r=$('#vr_'+k);if(r)r.value=v;vpSet(k,v)}
-function shbUpd(){$('#shb').hidden=!SHORTS;if(SHORTS)$('#shb').textContent='⚠ short circuit – two outputs drive different values on one net'}
+function shbUpd(){$('#shb').hidden=!SHORTS;if(SHORTS)$('#shb').textContent='⚠ joined outputs disagree – net resolves LOW'}
 function openEd(c){if(!c||!KS[c.k]||!KS[c.k].cpu)return;ED={c};const B=BR(c.p);$('#edt').textContent=B.name+' – program';const s=$('#edx');s.innerHTML='<option value="">Load example…</option>'+Object.keys(EXS).map(k=>`<option>${esc(k)}</option>`).join('');$('#edc').value=c.code||'';$('#ed').hidden=false;$('#edm').textContent='';edHelp(0)}
 function edEx(n){if(n&&ED){$('#edc').value=sketchFor(n,ED.c.p.b);$('#edx').value=''}}
 function edRun(){if(!ED)return;const c=ED.c;if(!sim.map[c.id])return toast('That part is no longer on the board');const pre=snapState();c.code=$('#edc').value;c.cpu=null;cpuOf(c);rec(pre);$('#edm').textContent='✔ uploaded – running'}
@@ -2745,3 +2745,10 @@ void loop() {
 PRE.push({n:'Arduino + OLED 128x64 (SSD1306)',d:'Uno draws text, a box and a bouncing ball on a real I2C OLED part (SDA=A4, SCL=A5).',s:()=>`part u M:mcu b=uno\npart o M:oled\nwire u.A4 -> o.SDA\nwire u.A5 -> o.SCL\nsketch u "OLED - Hello + bouncing ball"`});
 PRE.push({n:'FastLED rainbow on NeoPixel strip',d:'FastLED sketch on pin 6 animates an 8-LED WS2812 strip.',s:()=>`part u M:mcu b=uno\npart st M:neo n=8\nwire u.D6 -> st.DIN\nsketch u "FastLED - rainbow strip"`});
 pal();renderPre();
+
+/* drawer + mobile helpers */
+function drawer(o){document.body.classList.toggle('drawer',!!o);if(!o)$('#fly').hidden=true}
+$('#fly').addEventListener('click',e=>{if(e.target.closest('button')&&matchMedia('(max-width:820px)').matches){drawer(0)}});
+$('#libl').addEventListener('click',e=>{if(e.target.closest('button')&&matchMedia('(max-width:820px)').matches)drawer(0)});
+$('#pre').addEventListener('click',e=>{if(e.target.closest('button')&&matchMedia('(max-width:820px)').matches)drawer(0)});
+addEventListener('resize',()=>{if(!matchMedia('(max-width:820px)').matches)drawer(0)});
